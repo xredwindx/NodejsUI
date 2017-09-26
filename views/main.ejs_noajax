@@ -23,6 +23,7 @@
 </style>
 </head>
 <body>
+<!--<%= JSON.stringify(arrData) %>-->
 <div class="container" style="margin-top: 2%">
     <!-- 총계 -->
     <div class="panel panel-default">
@@ -65,6 +66,7 @@
     <!-- list -->
     <div class="col-md-10 col-md-offset-1 col-sm-10 col-sm-offset-1">
         <table class="table table-bordered table-hover table-condensed" id="tableList">
+            <thead>
                 <colgroup>
                     <col width="5%" />
                     <col width="7%" />
@@ -77,54 +79,41 @@
                     <th>Content Name</th>
                     <th class="text-center">Solbox Status</th>
                 </tr>
+            </thead>
+            <tbody>
+            <%
+                arrData.forEach(function (item) {
+                    if(item.status == "X") {
+            %>
+                <tr class="danger">
+            <% } else { %>
+                <tr>
+            <% } %>
+                    <td class="text-center"><%= item.num %></td>
+                    <td class="text-center"><%= item.date %></td>
+                    <td>
+                        <h6>
+                        <% if (item.status == "O") { %>
+                            <a href="<%= item.url%>" target="_blank"><span class="badge">test url</span></a>&nbsp;&nbsp;
+                        <% } %>
+                        <%= item.name %>
+                        </h6>
+                    </td>
+                    <td class="text-center"><%= item.status %></td>
+                </tr>
+            <% }); %>
+            <% if (arrData.length == 0) { %>
+                <tr><td colspan="4" class="text-center">결과가 없습니다.</td></tr>
+            <% } %>
+            </tbody>
         </table>
     </div>
 </div>
-<br/>
-<label id="errorMsg"></label>
 
 <script type="text/javascript">
     $(function () {
         $("input[name=radioType]").change(function () {
              $("#frm").submit();
-        });
-
-        $.ajax({
-            type: "GET",
-            url: "/view/list",
-            dataType: "json",
-            data: {"radioType": "<%=radioType%>"},
-            success: function(data) {
-                var trData = "";
-                var dataLen = data.arrData.length;
-                if(dataLen < 1) {
-                    trData += '<tr><td colspan="4" class="text-center">결과가 없습니다.</td></tr>';
-                }
-                for(var i=0 ; i < dataLen ; i++) {
-                    var item = data.arrData[i];
-                    if(item.status == "X") {
-                        trData += '<tr class="danger">';
-                    } else {
-                        trData += '<tr>';
-                    }
-                    trData += '<td class="text-center">'+item.num+'</td>';
-                    trData += '<td class="text-center">'+item.date+'</td>';
-                    trData += '<td><h6>';
-                    if(item.status == "O") {
-                        trData += '<a href="'+item.url+'" target="_blank"><span class="badge">test url</span></a>&nbsp;&nbsp;';
-                    }
-                    trData += item.name;
-                    trData += '</h6></td>';
-                    trData += '<td class="text-center">'+item.status+'</td>';
-                    trData += '</tr>';
-                }
-                $("#tableList").append(trData);
-                trData = "";
-            },
-            error: function(error) {
-                console.log(error);
-                $("#errorMsg").text("error : "+JSON.stringify(error));
-            }
         });
     });
 </script>
