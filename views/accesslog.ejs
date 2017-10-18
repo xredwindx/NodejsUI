@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <META http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <META http-equiv="Expires" content="-1">
+    <META http-equiv="Pragma" content="no-cache">
+    <META http-equiv="Cache-Control" content="no-cache, no-store">
+
+    <title>웅진씽크빅 accesslog</title>
+    <!-- bootstrap css -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- jquery -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <!-- bootstrap js -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <style>
+    </style>
+</head>
+<body>
+<div class="container-fluid" style="margin-top: 2%">
+    <div class="row">
+        <!-- left menu -->
+        <div class="col-sm-2">
+            <div>
+                <ul class="nav nav-pills nav-stacked">
+                    <li id="li_20171017"><a href="#" onclick="subMenu(20171017);">2017/10/17</a></li>
+                    <li id="li_20171018"><a href="#" onclick="subMenu(20171018);">2017/10/18</a></li>
+                </ul>
+            </div>
+        </div>
+        <!-- list -->
+        <div id="mainContent" class="col-sm-10" style="display:none">
+            <label id="dateInfo"></label>
+            <table class="table table-bordered table-hover table-condensed" id="tableList">
+                <colgroup>
+                    <col width="100%" />
+                </colgroup>
+                <thead>
+                    <tr class="info">
+                        <th class="text-center">Access Log</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<br/>
+<label id="errorMsg"></label>
+
+<script type="text/javascript">
+    function subMenu(dateParam) {
+        $("#dateUl").remove();
+        var subStr = '<li><div id="dateUl" class="list-group">';
+        for(var i=0 ; i < 24 ; i++) {
+            subStr += '<a id="hli_'+i+'" class="list-group-item" href="#" onclick="gridView('+dateParam+','+i+')">'+i+'</a>';
+        }
+        subStr += '</div></li>';
+        $("#li_"+dateParam).append(subStr);
+    }
+
+    function gridView(dateParam, hourParam) {
+        $("#tableList > tbody").empty();
+        $.ajax({
+            type: "GET",
+            url: "/accesslog/list",
+            dataType: "json",
+            data: {"date": dateParam, "hour":hourParam},
+            success: function (data) {
+                $('#mainContent').css("display","block");
+                $('#dateInfo').text("검색날짜: " + dateParam.substring(0,4) + "-" + dateParam.substring(5,7) + "-" + dateParam.substring(8,10)
+                    + " " + hourParam + "사");
+                var trData = "";
+                var dataLen = data.arrData.length;
+                if (dataLen < 1) {
+                    trData += '<tr><td class="text-center">결과가 없습니다.</td></tr>';
+                }
+                for (var i = 0; i < dataLen; i++) {
+                    var item = data.arrData[i];
+                    trData += '<tr><td><h6>';
+                    trData += item.data;
+                    trData += '</h6></td>';
+                    trData += '</tr>';
+                }
+                $("#tableList > tbody").append(trData);
+                trData = "";
+            },
+            error: function (error) {
+                console.log(error);
+                $("#errorMsg").text("error : " + JSON.stringify(error));
+            }
+        });
+    }
+</script>
+</body>
+</html>

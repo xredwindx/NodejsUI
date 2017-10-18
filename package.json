@@ -8,8 +8,8 @@
   "dependencies": {
     "body-parser": "~1.17.1",
     "ejs": "^2.5.7",
-    "express": "~4.15.2",
-    "moment": "^2.18.1",
+    "express": "^4.15.5",
+    "moment": "^2.19.1",
     "numeral": "^2.0.6"
   }
 }
