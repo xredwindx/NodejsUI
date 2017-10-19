@@ -27,11 +27,11 @@
     <div class="row">
         <!-- left menu -->
         <div class="col-sm-2">
-            <div>
-                <ul class="nav nav-pills nav-stacked">
-                    <li id="li_20171017"><a href="#" onclick="subMenu(20171017);">2017/10/17</a></li>
-                    <li id="li_20171018"><a href="#" onclick="subMenu(20171018);">2017/10/18</a></li>
-                </ul>
+            <div id="accessDate">
+                <!--<ul class="nav nav-pills nav-stacked">-->
+                    <!--<li id="li_20171017"><a href="#" onclick="subMenu('20171017');">2017-10-17</a></li>-->
+                    <!--<li id="li_20171018"><a href="#" onclick="subMenu('20171018');">2017-10-18</a></li>-->
+                <!--</ul>-->
             </div>
         </div>
         <!-- list -->
@@ -55,27 +55,52 @@
 <label id="errorMsg"></label>
 
 <script type="text/javascript">
+    $(function () {
+        var mainStr = '<ul class="nav nav-pills nav-stacked">';
+        var dt = new Date();
+
+        while(true) {
+            var dateVal = dt.getFullYear() + "" + zeroDateFormat(dt.getMonth()+1) + "" + zeroDateFormat(dt.getDate());
+
+            if(dateVal == "20171018") {
+                break;
+            } else {
+                var dateText = dt.getFullYear() + "-" + zeroDateFormat(dt.getMonth()+1) + "-" + zeroDateFormat(dt.getDate());
+                mainStr += '<li id="li_' + dateVal + '"><a href="#" onclick="subMenu(' + dateVal + ');">' + dateText + '</a></li>';
+                dt.setDate(dt.getDate()-1);
+            }
+        }
+
+        mainStr += '</ul>';
+        $('#accessDate').append(mainStr);
+    });
+
     function subMenu(dateParam) {
         $("#dateUl").remove();
         var subStr = '<li><div id="dateUl" class="list-group">';
         for(var i=0 ; i < 24 ; i++) {
-            subStr += '<a id="hli_'+i+'" class="list-group-item" href="#" onclick="gridView('+dateParam+','+i+')">'+i+'</a>';
+            subStr += '<a id="hli_'+i+'" class="list-group-item" href="#" onclick="gridView(String('+dateParam+'),'+i+')">'+i+'</a>';
         }
         subStr += '</div></li>';
         $("#li_"+dateParam).append(subStr);
     }
 
     function gridView(dateParam, hourParam) {
+        $('#mainContent').css("display","block");
         $("#tableList > tbody").empty();
+
+        var yearStr = dateParam.substring(0,4);
+        var monthStr = dateParam.substring(4,6);
+        var dayStr = dateParam.substring(6,8);
+
+        $('#dateInfo').text("날짜: " + yearStr + "-" + monthStr + "-" + dayStr + " " + hourParam + "시");
+
         $.ajax({
             type: "GET",
             url: "/accesslog/list",
             dataType: "json",
-            data: {"date": dateParam, "hour":hourParam},
+            data: {"dateParam": dateParam, "hourParam":hourParam},
             success: function (data) {
-                $('#mainContent').css("display","block");
-                $('#dateInfo').text("검색날짜: " + dateParam.substring(0,4) + "-" + dateParam.substring(5,7) + "-" + dateParam.substring(8,10)
-                    + " " + hourParam + "사");
                 var trData = "";
                 var dataLen = data.arrData.length;
                 if (dataLen < 1) {
@@ -89,13 +114,19 @@
                     trData += '</tr>';
                 }
                 $("#tableList > tbody").append(trData);
-                trData = "";
             },
             error: function (error) {
                 console.log(error);
                 $("#errorMsg").text("error : " + JSON.stringify(error));
             }
         });
+    }
+
+    function zeroDateFormat(num) {
+        if( num < 10 ) {
+            num = "0" + num;
+        }
+        return num;
     }
 </script>
 </body>
