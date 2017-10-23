@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <META http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <META http-equiv="Expires" content="-1">
+    <META http-equiv="Pragma" content="no-cache">
+    <META http-equiv="Cache-Control" content="no-cache, no-store">
+
+    <title>웅진씽크빅 HLS</title>
+    <!-- bootstrap css -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- jquery -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <!-- bootstrap js -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="/public/js/hls.min.js"></script>
+</head>
+<body>
+<div class="container-fluid" style="margin-top: 2%">
+    <!--  video -->
+    <div class="col-md-10 col-md-offset-1 col-sm-10 col-sm-offset-1">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <video id="video" controls width="100%"></video>
+            </div>
+        </div>
+    </div>
+    <!-- list -->
+    <div class="col-md-10 col-md-offset-1 col-sm-10 col-sm-offset-1">
+        <table class="table table-bordered table-hover table-condensed" id="tableList">
+            <colgroup>
+                <col width="5%" />
+                <col width="7%" />
+                <col width="7%" />
+                <col width="81%" />
+            </colgroup>
+            <tr class="info">
+                <th class="text-center">No</th>
+                <th class="text-center">Date</th>
+                <th class="text-center">Time</th>
+                <th>Content Name</th>
+            </tr>
+        </table>
+    </div>
+</div>
+<br/>
+<label id="errorMsg"></label>
+
+<script type="text/javascript">
+    $(function () {
+        $.ajax({
+            type: "GET",
+            url: "/hls/list",
+            dataType: "json",
+            success: function(data) {
+                var trData = "";
+                var dataLen = data.arrData.length;
+                if(dataLen < 1) {
+                    trData += '<tr><td colspan="4" class="text-center">결과가 없습니다.</td></tr>';
+                }
+                for(var i=0 ; i < dataLen ; i++) {
+                    var item = data.arrData[i];
+
+                    trData += '<tr id="t'+item.num+'" onclick="goPlay('+item.num+',\''+item.url+'\')" style="cursor: pointer">';
+                    trData += '<td class="text-center">'+item.num+'</td>';
+                    trData += '<td class="text-center">'+item.date+'</td>';
+                    trData += '<td class="text-center">'+item.time+'</td>';
+                    trData += '<td>'+item.name+'</td>';
+                    trData += '</tr>';
+                }
+                $("#tableList").append(trData);
+                trData = "";
+            },
+            error: function(error) {
+                console.log(error);
+                $("#errorMsg").text("error : "+JSON.stringify(error));
+            }
+        });
+    });
+
+    function goPlay(num,url) {
+        $('#tableList tr').removeClass('warning');
+        $('#t'+num).attr('class','warning');
+        if(Hls.isSupported()) {
+            var video = document.getElementById('video');
+            var hls = new Hls();
+            hls.loadSource(url);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED,function() {
+                video.play();
+            });
+        }
+        $('html, body').animate( { scrollTop : 0 }, 400 );
+    }
+</script>
+</body>
+</html>
