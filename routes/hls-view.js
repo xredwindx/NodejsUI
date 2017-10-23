@@ -18,7 +18,7 @@ function fncData(req, res) {
 function fncDetailData(req, res) {
     let now = moment().format("YYYYMMDD");
 
-    let fileName = "hls_data_all.log";
+    let fileName = "all_hls_data.log";
     let fileData = fs.readFileSync("../data/" + fileName, "utf-8").split("||;");
 
     let arrData = [];
