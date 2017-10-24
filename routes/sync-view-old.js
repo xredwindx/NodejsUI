@@ -2,7 +2,6 @@ const express = require("express");
 const fs = require("fs");
 const moment = require("moment");
 const numeral = require("numeral");
-const cp = require("child_process");
 
 const router =  express.Router();
 
@@ -18,22 +17,6 @@ function getDomainUrl(param, path) {
         url = "mms://wjwmv.myskcdn.co.kr/media"+path;
     }
     return url;
-}
-
-function osCmd(status, now, path) {
-    let cmd = 'cat /usr/service/wjsyncweb/data/wj2solbox_full_syncd_'+now+'.log | grep "'+path+'" | grep "[COMPLETED SUCCESS]" | wc -l';
-    // console.log(cmd);
-    try {
-        let child = cp.execSync(cmd);
-        if(parseInt(child.toString(), 10) > 0) {
-            status = "O";
-        }
-    } catch(exception) {
-        console.log("#################### os cmd exception ###########################");
-        console.log(exception);
-    }
-    // console.log("osCmd status : "+status);
-    return status;
 }
 
 function fncData(req, res) {
@@ -56,18 +39,7 @@ function fncData(req, res) {
         let data = item.split("||");
         if (data.length == 3) {
             // status check
-            let status = "X";
             if (data[1] == "SUCCESS") {
-                status = "O";
-            }
-
-            // 실패일 경우 한번 더 체크
-            if(status == "X") {
-                status = osCmd(status, now, data[2]);
-            }
-
-            // status check
-            if (status == "O") {
                 successCount++;
             } else {
                 failedCount++;
@@ -80,7 +52,7 @@ function fncData(req, res) {
     // console.log("total : "+totalCount+" success : "+successCount+" fail : "+failedCount);
     let percent = (successCount / totalCount) * 100;
 
-    res.render("syncList", {"totalCnt":numeral(totalCount).format('0,0'), "successCnt":numeral(successCount).format('0,0')
+    res.render("syncListOld", {"totalCnt":numeral(totalCount).format('0,0'), "successCnt":numeral(successCount).format('0,0')
         , "failedCnt":numeral(failedCount).format('0,0'), "percent": percent.toFixed(2), "now":nowUI, "radioType":radioType});
 }
 
@@ -114,11 +86,6 @@ function fncDetailData(req, res) {
             if (data[1] == "SUCCESS") {
                 status = "O";
             }
-            // 실패일 경우 한번 더 체크
-            if(status == "X") {
-                status = osCmd(status, now, data[2]);
-            }
-
             if (radioType == "all") {
                 arrData.push({"num": num, "date": data[0], "status": status, "name": data[2], "url": domainUrl});
                 num++;

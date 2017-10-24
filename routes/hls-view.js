@@ -1,7 +1,7 @@
 const express = require("express");
 const fs = require("fs");
 const moment = require("moment");
-const numeral = require("numeral");
+const config = require("../comm/config.json");
 
 const router =  express.Router();
 
@@ -12,7 +12,7 @@ function getDomainUrl(path) {
 }
 
 function fncData(req, res) {
-    res.render("hls", {});
+    res.render("hls", {"max_buffer_size":config.max_buffer_size_k});
 }
 
 function fncDetailData(req, res) {

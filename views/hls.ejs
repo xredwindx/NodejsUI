@@ -88,8 +88,13 @@
         $('#tableList tr').removeClass('warning');
         $('#t'+num).attr('class','warning');
         if(Hls.isSupported()) {
+            var maxBufferSizeK = "<%=max_buffer_size%>";
             var video = document.getElementById('video');
-            var hls = new Hls();
+            var config = {
+                maxBufferSize: maxBufferSizeK*1000
+            };
+
+            var hls = new Hls(config);
             hls.loadSource(url);
             hls.attachMedia(video);
             hls.on(Hls.Events.MANIFEST_PARSED,function() {

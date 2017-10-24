@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <META http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <META http-equiv="Expires" content="-1">
+    <META http-equiv="Pragma" content="no-cache">
+    <META http-equiv="Cache-Control" content="no-cache, no-store">
+
+    <title>웅진씽크빅 sync status</title>
+    <!-- bootstrap css -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- jquery -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <!-- bootstrap js -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<style>
+</style>
+</head>
+<body>
+<div class="container" style="margin-top: 2%">
+    <!-- 총계 -->
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="col-md-3 col-sm-3">
+                <p class="text-left"><h4>Date : <%=now%></h4></p>
+            </div>
+            <div class="col-md-6 col-md-offset-1 col-sm-6 col-sm-offset-1">
+                <p class="text-right">
+                <h4>성공수 : <strong><%= successCnt%></strong>&nbsp;&nbsp;&nbsp;실패수 : <strong><%= failedCnt%></strong>
+                &nbsp;&nbsp;&nbsp;총수 : <strong><%= totalCnt%></strong> (성공률 : <strong><%= percent%><small>%</small></strong>)</h4>
+                </p>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- radio 버튼 -->
+    <div class="col-md-10 col-md-offset-1 col-sm-10 col-sm-offset-1">
+        <form id="frm" action="/viewOld" method="get" class="form-inline">
+            <div class="form-group">
+                <label class="radio-inline">
+            <% if(radioType == "f") { %>
+                    <input type="radio" name="radioType" value="f" checked="checked">
+            <% } else { %>
+                    <input type="radio" name="radioType" value="f">
+            <% } %>
+                실패</label>
+            </div>
+            <div class="form-group">
+                <label class="radio-inline">
+            <% if(radioType == "all") { %>
+                    <input type="radio" name="radioType" value="all" checked="checked">
+            <% } else { %>
+                    <input type="radio" name="radioType" value="all">
+            <% } %>
+                전체</label>
+            </div>
+        </form>
+    </div>
+    <!-- list -->
+    <div class="col-md-10 col-md-offset-1 col-sm-10 col-sm-offset-1">
+        <table class="table table-bordered table-hover table-condensed" id="tableList">
+                <colgroup>
+                    <col width="5%" />
+                    <col width="7%" />
+                    <col width="78%" />
+                    <col width="10%" />
+                </colgroup>
+                <tr class="info">
+                    <th class="text-center">No</th>
+                    <th class="text-center">Date</th>
+                    <th>Content Name</th>
+                    <th class="text-center">Solbox Status</th>
+                </tr>
+        </table>
+    </div>
+</div>
+<br/>
+<label id="errorMsg"></label>
+
+<script type="text/javascript">
+    $(function () {
+        $("input[name=radioType]").change(function () {
+             $("#frm").submit();
+        });
+
+        $.ajax({
+            type: "GET",
+            url: "/viewOld/list",
+            dataType: "json",
+            data: {"radioType": "<%=radioType%>"},
+            success: function(data) {
+                var trData = "";
+                var dataLen = data.arrData.length;
+                if(dataLen < 1) {
+                    trData += '<tr><td colspan="4" class="text-center">결과가 없습니다.</td></tr>';
+                }
+                for(var i=0 ; i < dataLen ; i++) {
+                    var item = data.arrData[i];
+                    if(item.status == "X") {
+                        trData += '<tr class="danger">';
+                    } else {
+                        trData += '<tr>';
+                    }
+                    trData += '<td class="text-center">'+item.num+'</td>';
+                    trData += '<td class="text-center">'+item.date+'</td>';
+                    trData += '<td><h6>';
+                    if(item.status == "O") {
+                        trData += '<a href="'+item.url+'" target="_blank"><span class="badge">test url</span></a>&nbsp;&nbsp;';
+                    }
+                    trData += item.name;
+                    trData += '</h6></td>';
+                    trData += '<td class="text-center">'+item.status+'</td>';
+                    trData += '</tr>';
+                }
+                $("#tableList").append(trData);
+                trData = "";
+            },
+            error: function(error) {
+                console.log(error);
+                $("#errorMsg").text("error : "+JSON.stringify(error));
+            }
+        });
+    });
+</script>
+</body>
+</html>
