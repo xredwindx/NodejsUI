@@ -48,14 +48,13 @@ function fncData(req, res) {
     let fileName = "data_" + now + ".log";
     let fileData = fs.readFileSync("../data/" + fileName, "utf-8").split("||;");
 
+    let totalCount = fileData.length;
     let successCount = 0;
     let failedCount = 0;
-    let arrDataName = [];
-
-    for (var i = 2; i < fileData.length; i++) {
-        var item = fileData[fileData.length-i];
+    let noCount = 0;
+    fileData.forEach(function (item) {
         let data = item.split("||");
-        if(arrDataName.indexOf(data[2]) == -1) {
+        if (data.length == 3) {
             // status check
             let status = "X";
             if (data[1] == "SUCCESS") {
@@ -73,11 +72,11 @@ function fncData(req, res) {
             } else {
                 failedCount++;
             }
-
-            arrDataName.push(data[2]);
+        } else {
+            noCount++;
         }
-    }
-    let totalCount = successCount + failedCount;
+    });
+    totalCount = totalCount - noCount;
     // console.log("total : "+totalCount+" success : "+successCount+" fail : "+failedCount);
     let percent = (successCount / totalCount) * 100;
 
@@ -91,19 +90,17 @@ function fncDetailData(req, res) {
         radioType = "f";
     }
     let now = moment().format("YYYYMMDD");
+    let nowUI = moment().format("YYYY-MM-DD");
+    // let nowLog = moment().format("YYYY-MM-DD HH:mm:ss");
 
     let fileName = "data_" + now + ".log";
     let fileData = fs.readFileSync("../data/" + fileName, "utf-8").split("||;");
 
     let arrData = [];
-    let arrDataName = [];
     let num = 1;
-
-    for (var i = 2; i < fileData.length; i++) {
-        var item = fileData[fileData.length-i];
-
+    fileData.forEach(function (item) {
         let data = item.split("||");
-        if(arrDataName.indexOf(data[2]) == -1) {
+        if (data.length == 3) {
             // test 할 link url
             let rootPath = data[2].split("/");
             let pathStr = "";
@@ -131,11 +128,8 @@ function fncDetailData(req, res) {
                     num++;
                 }
             }
-
-            arrDataName.push(data[2]);
         }
-    }
-
+    });
     res.send({"arrData":arrData});
 }
 
