@@ -30,14 +30,18 @@
             <div class="col-md-3 col-sm-3">
                 <p class="text-left"><h4>Date : <%=now%></h4></p>
             </div>
-            <div class="col-md-6 col-md-offset-1 col-sm-6 col-sm-offset-1" id="totalInfo">
+            <div class="col-md-6 col-md-offset-1 col-sm-6 col-sm-offset-1">
+                <p class="text-right">
+                <h4>성공수 : <strong><%= successCnt%></strong>&nbsp;&nbsp;&nbsp;실패수 : <strong><%= failedCnt%></strong>
+                &nbsp;&nbsp;&nbsp;총수 : <strong><%= totalCnt%></strong> (성공률 : <strong><%= percent%><small>%</small></strong>)</h4>
+                </p>
             </div>
         </div>
     </div>
     </div>
     <!-- radio 버튼 -->
     <div class="col-md-10 col-md-offset-1 col-sm-10 col-sm-offset-1">
-        <form id="frm" action="/view" method="get" class="form-inline">
+        <form id="frm" action="/view20171026" method="get" class="form-inline">
             <div class="form-group">
                 <label class="radio-inline">
             <% if(radioType == "f") { %>
@@ -86,18 +90,11 @@
         });
 
         $.ajax({
-            type: "POST",
-            url: "/view/list",
+            type: "GET",
+            url: "/view20171026/list",
             dataType: "json",
             data: {"radioType": "<%=radioType%>"},
             success: function(data) {
-                var divData = "";
-                divData = '<p class="text-right">';
-                divData += '<h4>성공수 : <strong>'+data.successCnt+'</strong>&nbsp;&nbsp;&nbsp;실패수 : <strong>'+data.failedCnt+'</strong>';
-                divData += '&nbsp;&nbsp;&nbsp;총수 : <strong>'+data.totalCnt+'</strong> (성공률 : <strong>'+data.percent+'<small>%</small></strong>)</h4></p>';
-
-                $("#totalInfo").append(divData);
-
                 var trData = "";
                 var dataLen = data.arrData.length;
                 if(dataLen < 1) {
@@ -122,6 +119,7 @@
                     trData += '</tr>';
                 }
                 $("#tableList").append(trData);
+                trData = "";
             },
             error: function(error) {
                 console.log(error);

@@ -2,6 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const moment = require("moment");
 const numeral = require("numeral");
+const cp = require("child_process");
 
 const router =  express.Router();
 
@@ -19,6 +20,22 @@ function getDomainUrl(param, path) {
     return url;
 }
 
+function osCmd(status, now, path) {
+    let cmd = 'cat /usr/service/wjsyncweb/data/wj2solbox_full_syncd_'+now+'.log | grep "'+path+'" | grep "[COMPLETED SUCCESS]" | wc -l';
+    // console.log(cmd);
+    try {
+        let child = cp.execSync(cmd);
+        if(parseInt(child.toString(), 10) > 0) {
+            status = "O";
+        }
+    } catch(exception) {
+        console.log("#################### os cmd exception ###########################");
+        console.log(exception);
+    }
+    // console.log("osCmd status : "+status);
+    return status;
+}
+
 function fncData(req, res) {
     let radioType = req.query.radioType;
     if (radioType == undefined) {
@@ -30,30 +47,41 @@ function fncData(req, res) {
 
     let fileName = "data_" + now + ".log";
     let fileData = fs.readFileSync("../data/" + fileName, "utf-8").split("||;");
-    // console.log(nowLog+" fileData time");
 
-    let totalCount = fileData.length;
     let successCount = 0;
     let failedCount = 0;
-    let noCount = 0;
-    fileData.forEach(function (item) {
+    let arrDataName = [];
+
+    for (var i = 2; i < fileData.length; i++) {
+        var item = fileData[fileData.length-i];
         let data = item.split("||");
-        if (data.length == 3) {
+        if(arrDataName.indexOf(data[2]) == -1) {
             // status check
+            let status = "X";
             if (data[1] == "SUCCESS") {
+                status = "O";
+            }
+
+            // 실패일 경우 한번 더 체크
+            if(status == "X") {
+                status = osCmd(status, now, data[2]);
+            }
+
+            // status check
+            if (status == "O") {
                 successCount++;
             } else {
                 failedCount++;
             }
-        } else {
-            noCount++;
+
+            arrDataName.push(data[2]);
         }
-    });
-    totalCount = totalCount - noCount;
+    }
+    let totalCount = successCount + failedCount;
     // console.log("total : "+totalCount+" success : "+successCount+" fail : "+failedCount);
     let percent = (successCount / totalCount) * 100;
 
-    res.render("syncListOld", {"totalCnt":numeral(totalCount).format('0,0'), "successCnt":numeral(successCount).format('0,0')
+    res.render("syncList20171026", {"totalCnt":numeral(totalCount).format('0,0'), "successCnt":numeral(successCount).format('0,0')
         , "failedCnt":numeral(failedCount).format('0,0'), "percent": percent.toFixed(2), "now":nowUI, "radioType":radioType});
 }
 
@@ -63,17 +91,19 @@ function fncDetailData(req, res) {
         radioType = "f";
     }
     let now = moment().format("YYYYMMDD");
-    let nowUI = moment().format("YYYY-MM-DD");
-    // let nowLog = moment().format("YYYY-MM-DD HH:mm:ss");
 
     let fileName = "data_" + now + ".log";
     let fileData = fs.readFileSync("../data/" + fileName, "utf-8").split("||;");
 
     let arrData = [];
+    let arrDataName = [];
     let num = 1;
-    fileData.forEach(function (item) {
+
+    for (var i = 2; i < fileData.length; i++) {
+        var item = fileData[fileData.length-i];
+
         let data = item.split("||");
-        if (data.length == 3) {
+        if(arrDataName.indexOf(data[2]) == -1) {
             // test 할 link url
             let rootPath = data[2].split("/");
             let pathStr = "";
@@ -87,6 +117,11 @@ function fncDetailData(req, res) {
             if (data[1] == "SUCCESS") {
                 status = "O";
             }
+            // 실패일 경우 한번 더 체크
+            if(status == "X") {
+                status = osCmd(status, now, data[2]);
+            }
+
             if (radioType == "all") {
                 arrData.push({"num": num, "date": data[0], "status": status, "name": data[2], "url": domainUrl});
                 num++;
@@ -96,8 +131,11 @@ function fncDetailData(req, res) {
                     num++;
                 }
             }
+
+            arrDataName.push(data[2]);
         }
-    });
+    }
+
     res.send({"arrData":arrData});
 }
 

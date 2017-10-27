@@ -37,7 +37,7 @@
     </div>
     <!-- radio 버튼 -->
     <div class="col-md-10 col-md-offset-1 col-sm-10 col-sm-offset-1">
-        <form id="frm" action="/view" method="get" class="form-inline">
+        <form id="frm" action="/before/<%=dateParam%>" method="get" class="form-inline">
             <div class="form-group">
                 <label class="radio-inline">
             <% if(radioType == "f") { %>
@@ -87,9 +87,9 @@
 
         $.ajax({
             type: "POST",
-            url: "/view/list",
+            url: "/before/list",
             dataType: "json",
-            data: {"radioType": "<%=radioType%>"},
+            data: {"radioType": "<%=radioType%>", "dateParam": "<%=dateParam%>"},
             success: function(data) {
                 var divData = "";
                 divData = '<p class="text-right">';
@@ -110,7 +110,7 @@
                     } else {
                         trData += '<tr>';
                     }
-                    trData += '<td class="text-center">'+item.num+'</td>';
+                    trData += '<td class="text-center">'+(i+1)+'</td>';
                     trData += '<td class="text-center">'+item.date+'</td>';
                     trData += '<td><h6>';
                     if(item.status == "O") {
