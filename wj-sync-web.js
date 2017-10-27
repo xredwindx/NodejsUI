@@ -17,14 +17,19 @@ let port = 8888;
 const numCPUS = require('os').cpus().length;
 
 if(cluster.isMaster) {
-    for(let i=0 ; i < numCPUS ; i++) {
+    let cpuLen = numCPUS;
+    if(cpuLen > 1) {
+        cpuLen = numCPUS-1;
+    }
+
+    for(let i=0 ; i < cpuLen ; i++) {
         cluster.fork();
     }
     cluster.on("exit", function (worker, code, signal) {
         console.log("worker "+worker.process.pid+" died");
     })
 } else {
-
+    console.log( 'current worker pid is ' + process.pid );
     // ejs
     app.engine("html", require("ejs").renderFile);
     app.set("view engine", "ejs");
