@@ -56,6 +56,15 @@
             <% } %>
                 전체</label>
             </div>
+            <div class="form-group">
+                <label class="radio-inline">
+                    <% if(radioType == "e") { %>
+                    <input type="radio" name="radioType" value="e" checked="checked">
+                    <% } else { %>
+                    <input type="radio" name="radioType" value="e">
+                    <% } %>
+                    불가</label>
+            </div>
         </form>
     </div>
     <!-- list -->
@@ -64,7 +73,8 @@
                 <colgroup>
                     <col width="5%" />
                     <col width="7%" />
-                    <col width="78%" />
+                    <col width="68%" />
+                    <col width="10%" />
                     <col width="10%" />
                 </colgroup>
                 <tr class="info">
@@ -72,6 +82,7 @@
                     <th class="text-center">Date</th>
                     <th>Content Name</th>
                     <th class="text-center">Solbox Status</th>
+                    <th class="text-center">비고</th>
                 </tr>
         </table>
     </div>
@@ -101,7 +112,7 @@
                 var trData = "";
                 var dataLen = data.arrData.length;
                 if(dataLen < 1) {
-                    trData += '<tr><td colspan="4" class="text-center">결과가 없습니다.</td></tr>';
+                    trData += '<tr><td colspan="5" class="text-center">결과가 없습니다.</td></tr>';
                 }
                 for(var i=0 ; i < dataLen ; i++) {
                     var item = data.arrData[i];
@@ -119,6 +130,7 @@
                     trData += item.name;
                     trData += '</h6></td>';
                     trData += '<td class="text-center">'+item.status+'</td>';
+                    trData += '<td class="text-center">'+item.msg+'</td>';
                     trData += '</tr>';
                 }
                 $("#tableList").append(trData);

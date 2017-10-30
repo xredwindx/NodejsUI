@@ -23,6 +23,7 @@ function fncData(req, res) {
             let data = fullItem.split(" ");
             if(data[2] == item) {
                 arrData.push(fullItem);
+                break;
             }
         }
     }

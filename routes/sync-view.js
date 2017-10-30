@@ -19,6 +19,20 @@ function getDomainUrl(param, path) {
     return url;
 }
 
+function getSyncErrMsg(num) {
+    let msg = "";
+
+    if(num == 23) {
+        msg = "not found";
+    } else if(num == 10) {
+        msg = "connection timeout";
+    } else if(num == 12) {
+        msg = "session timeout";
+    }
+
+    return msg;
+}
+
 function fncData(req, res) {
     let radioType = req.query.radioType;
     if (radioType == undefined) {
@@ -31,7 +45,7 @@ function fncData(req, res) {
 }
 
 function fncDetailData(req, res) {
-    let radioType = req.query.radioType;
+    let radioType = req.body.radioType;
     if (radioType == undefined) {
         radioType = "f";
     }
@@ -41,8 +55,39 @@ function fncDetailData(req, res) {
     let fileName = "data_" + now + ".log";
     let fileData = fs.readFileSync("../data/" + fileName, "utf-8").split("||;");
 
-    let fileSucName = "full_data_success_" + now + ".log";
-    let fileSucData = fs.readFileSync("../data/" + fileSucName, "utf-8").split("\n");
+    let fileRetryName = "retry_data_" + now + ".log";
+    let fileRetryData = fs.readFileSync("../data/" + fileRetryName, "utf-8").split("\n");
+
+    let retryArrData = [];
+    for(let r=0 ; r < fileRetryData.length ; r++) {
+        let rItem = fileRetryData[r];
+        if(rItem.trim() == "") {
+            continue;
+        }
+
+        let rData = rItem.split(" ");
+
+        // errno 가져오기
+        let errData = rData[3].split("=");
+        let errNo = errData[1];
+
+        // status check
+        let rStatus = "X";
+        if (rData[1] == "SUCCESS") {
+            rStatus = "O";
+        } else if (errNo == 23) {
+            rStatus = "E";
+        }
+
+        // name 가져오기
+        let name = "";
+        let nameData = rData[2].split("/");
+        for(let n=1 ; n < nameData.length ; n++) {
+            name += "/"+nameData[n];
+        }
+
+        retryArrData.push({"date":rData[0], "status":rStatus, "name":name, "err":errNo});
+    }
 
     let arrData = [];
     let arrDataName = [];
@@ -50,11 +95,13 @@ function fncDetailData(req, res) {
     let successCount = 0;
     let failedCount = 0;
 
-    for (var i = 2; i < fileData.length; i++) {
-        var item = fileData[fileData.length-i];
+    for (let i = 2; i < fileData.length; i++) {
+        let item = fileData[fileData.length-i];
 
         let data = item.split("||");
         if(arrDataName.indexOf(data[2]) == -1) {
+            let msg = "";
+
             // test 할 link url
             let rootPath = data[2].split("/");
             let pathStr = "";
@@ -71,25 +118,37 @@ function fncDetailData(req, res) {
 
             // 실패일 경우 한번 더 체크
             if(status == "X") {
-                let pathName = '"'+data[2]+'"';
-                if(fileSucData.indexOf(pathName) > -1) {
-                    status = "O";
+                for(let x=0 ; x < retryArrData.length ; x++) {
+                    let reData = retryArrData[x];
+                    if(data[2].trim().toUpperCase() == reData.name.trim().toUpperCase()) {
+                        data[0] = reData.date;
+                        status = reData.status;
+                        msg =  getSyncErrMsg(reData.err);
+                        break;
+                    }
                 }
             }
 
             // status check
             if (status == "O") {
                 successCount++;
-            } else {
+            } else if (status == "X") {
                 failedCount++;
             }
 
             if (radioType == "all") {
-                arrData.push({"num": num, "date": data[0], "status": status, "name": data[2], "url": domainUrl});
-                num++;
-            } else {
+                if (status != "E") {
+                    arrData.push({"num": num, "date": data[0], "status": status, "name": data[2], "url": domainUrl, "msg": msg});
+                    num++;
+                }
+            } else if (radioType == "f") {
                 if (status == "X") {
-                    arrData.push({"num": num, "date": data[0], "status": status, "name": data[2], "url": domainUrl});
+                    arrData.push({"num": num, "date": data[0], "status": status, "name": data[2], "url": domainUrl, "msg": msg});
+                    num++;
+                }
+            } else if (radioType == "e") {
+                if (status == "E") {
+                    arrData.push({"num": num, "date": data[0], "status": status, "name": data[2], "url": domainUrl, "msg": msg});
                     num++;
                 }
             }
@@ -102,7 +161,7 @@ function fncDetailData(req, res) {
     // console.log("total : "+totalCount+" success : "+successCount+" fail : "+failedCount);
     let percent = (successCount / totalCount) * 100;
 
-    var returnData = {"arrData":arrData, "totalCnt":numeral(totalCount).format('0,0'), "successCnt":numeral(successCount).format('0,0')
+    let returnData = {"arrData":arrData, "totalCnt":numeral(totalCount).format('0,0'), "successCnt":numeral(successCount).format('0,0')
         , "failedCnt":numeral(failedCount).format('0,0'), "percent": percent.toFixed(2)};
 
     res.send(returnData);
