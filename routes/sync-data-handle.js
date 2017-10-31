@@ -11,7 +11,7 @@ function fncData(req, res) {
     let fileName = "sync_data_failure_" + dateParam + ".log";
     let fileData = fs.readFileSync("../data/" + fileName, "utf-8").split("\n");
 
-    let fileFullName = "sync_full_data_u_" + now + ".log";
+    let fileFullName = "sync_full_data_u_" + dateParam + ".log";
     let fileFullData = fs.readFileSync("../data/" + fileFullName, "utf-8").split("\n");
 
     let arrData = [];
@@ -29,8 +29,8 @@ function fncData(req, res) {
     }
 
     // 파일 쓰기
-    let logName = "/usr/service/wjsyncweb/data/sync_full_chk_data_" + dateParam + ".log";
-    // let logName = "../data/sync_full_chk_data_" + dateParam + ".log";
+    // let logName = "/usr/service/wjsyncweb/data/sync_full_chk_data_" + dateParam + ".log";
+    let logName = "../data/sync_full_chk_data_" + dateParam + ".log";
     fs.writeFileSync(logName, arrData.toString().replace(/,/g,"\n"));
 
     res.status(200).send("OK");

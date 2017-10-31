@@ -2,6 +2,7 @@
 
 PASSWD="Cdn5flwkahd)0"
 DATE=$(date '+%Y%m%d')
+DATE2=$(date -d '2 day ago' '+%Y%m%d')
 
 #sshpass -p$PASSWD scp -o StrictHostKeyChecking=no root@222.239.93.60:/usr/service/logs/wj2solbox_syncd/wj2solbox_syncd_$DATE.log /usr/service/wjsyncweb/data
 sshpass -p$PASSWD scp -o StrictHostKeyChecking=no root@222.239.93.60:/usr/service/logs/wj2solbox2_syncd/wj2solbox2_syncd_$DATE.log /usr/service/wjsyncweb/data
@@ -22,7 +23,7 @@ awk -F '"' '/COMPLETED/{split($1,a," "); print substr(a[1],2,length(a[1])-2),sub
 sort -r -k 3,3 /usr/service/wjsyncweb/data/sync_dupl_full_data_$DATE.log > /usr/service/wjsyncweb/data/sync_full_data_r_$DATE.log
 sort -u -k 3,3 /usr/service/wjsyncweb/data/sync_full_data_r_$DATE.log > /usr/service/wjsyncweb/data/sync_full_data_u_$DATE.log
 
-i=20171026
+i=DATE2
 while [ $i -lt $DATE ]
 do
         curl "http://localhost:8888/sync/data/$i"

@@ -94,6 +94,7 @@ function fncDetailData(req, res) {
     let num = 1;
     let successCount = 0;
     let failedCount = 0;
+    let exCount = 0;
 
     for (let i = 2; i < fileData.length; i++) {
         let item = fileData[fileData.length-i];
@@ -134,6 +135,8 @@ function fncDetailData(req, res) {
                 successCount++;
             } else if (status == "X") {
                 failedCount++;
+            } else if (status == "E") {
+                exCount++;
             }
 
             if (radioType == "all") {
@@ -162,7 +165,7 @@ function fncDetailData(req, res) {
     let percent = (successCount / totalCount) * 100;
 
     let returnData = {"arrData":arrData, "totalCnt":numeral(totalCount).format('0,0'), "successCnt":numeral(successCount).format('0,0')
-        , "failedCnt":numeral(failedCount).format('0,0'), "percent": percent.toFixed(2)};
+        , "failedCnt":numeral(failedCount).format('0,0'), "exCnt":numeral(exCount).format('0,0'), "percent": percent.toFixed(2)};
 
     res.send(returnData);
 }
