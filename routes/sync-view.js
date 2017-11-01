@@ -162,7 +162,7 @@ function fncDetailData(req, res) {
 
     let totalCount = successCount + failedCount;
     // console.log("total : "+totalCount+" success : "+successCount+" fail : "+failedCount);
-    let percent = (successCount / totalCount) * 100;
+    let percent = Math.floor((successCount / totalCount) * 10000)/100;
 
     let returnData = {"arrData":arrData, "totalCnt":numeral(totalCount).format('0,0'), "successCnt":numeral(successCount).format('0,0')
         , "failedCnt":numeral(failedCount).format('0,0'), "exCnt":numeral(exCount).format('0,0'), "percent": percent.toFixed(2)};
