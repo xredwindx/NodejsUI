@@ -1,0 +1,51 @@
+doctype html
+html
+    head
+        meta(http-equiv='Content-Type', content='text/html; charset=utf-8')
+        meta(http-equiv='Expires', content='-1')
+        meta(http-equiv='Pragma', content='no-cache')
+        meta(http-equiv='Cache-Control', content='no-cache, no-store')
+        title file import
+        // bootstrap css
+        link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css', integrity='sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u', crossorigin='anonymous')
+        link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css', integrity='sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp', crossorigin='anonymous')
+        // jquery
+        script(src='https://code.jquery.com/jquery-3.2.1.min.js', integrity='sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=', crossorigin='anonymous')
+        // bootstrap js
+        script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js', integrity='sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa', crossorigin='anonymous')
+    body
+        .container-fluid(style='margin-top: 2%')
+            .col-md-10.col-md-offset-1.col-sm-10.col-sm-offset-1
+                form#frm(action='', method='post', enctype='multipart/form-data')
+                    .form-group
+                        label
+                            |*&nbsp;file import&nbsp;(파일명은&nbsp;
+                            strong imgq_ip_list
+                            | &nbsp;으로 해야합니다.)
+                        br
+                        label
+                            |=>&nbsp;파일내용은 http://{ip}:9080/web/imgq_ip_list 에서 확인가능합니다.
+                        input#fileName(type='file', name='fileName')
+                    input.btn.btn-default(type='button', value='Import', onclick='fncSubmit();', style='cursor:pointer')
+        br
+        label#errorMsg
+        script(type='text/javascript').
+            function fncSubmit() {
+                var fileData = $("#fileName").prop("files")[0];
+                var formData = new FormData();
+                formData.append("file", fileData);
+                $.ajax({
+                    type: "POST",
+                    url: "/web/file/import",
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    success: function(data) {
+                        alert(data);
+                    },
+                    error: function(error) {
+                        $("#errorMsg").text("error : "+JSON.stringify(error));
+                    }
+                });
+            }

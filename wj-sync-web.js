@@ -51,6 +51,12 @@ if(cluster.isMaster) {
     app.use("/", mp);
     app.use("/chk_fail", failChk);
 
+    // dims purge
+    // const fileImport = require("./routes/file-import-web.js");
+    // app.set("view engine", "jade");
+    // app.use("/web/file", fileImport);
+    // app.use("/web/imgq_ip_list", express.static(config.dims_ip_file));
+
     // start server
     app.listen(port);
     console.info("##################################");
