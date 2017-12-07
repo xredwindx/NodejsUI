@@ -19,14 +19,14 @@ html
                 form#frm(action='', method='post', enctype='multipart/form-data')
                     .form-group
                         label
-                            |*&nbsp;file import&nbsp;(파일명은&nbsp;
+                            |*&nbsp;file upload&nbsp;(파일명은&nbsp;
                             strong imgq_ip_list
                             | &nbsp;으로 해야합니다.)
                         br
                         label
                             |=>&nbsp;파일내용은 http://{ip}:9080/web/imgq_ip_list 에서 확인가능합니다.
                         input#fileName(type='file', name='fileName')
-                    input.btn.btn-default(type='button', value='Import', onclick='fncSubmit();', style='cursor:pointer')
+                    input.btn.btn-default(type='button', value='Upload', onclick='fncSubmit();', style='cursor:pointer')
         br
         label#errorMsg
         script(type='text/javascript').
@@ -36,7 +36,7 @@ html
                 formData.append("file", fileData);
                 $.ajax({
                     type: "POST",
-                    url: "/web/file/import",
+                    url: "/web/file/upload",
                     cache: false,
                     processData: false,
                     contentType: false,

@@ -24,6 +24,6 @@ function fileImport(req, res) {
 }
 
 router.get("/", fileView);
-router.post("/import", upload.single("file"), fileImport);
+router.post("/upload", upload.single("file"), fileImport);
 
 module.exports = router;
