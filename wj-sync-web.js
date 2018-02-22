@@ -1,4 +1,3 @@
-const cluster = require('cluster');
 const express = require('express');
 const bodyParser = require('body-parser');
 const syncDataHandle = require('./routes/sync-data-handle');
@@ -15,52 +14,35 @@ const failChk = require('./routes/fail-chk');
 
 const app = express();
 let port = 8888;
-const numCPUS = require('os').cpus().length;
 
-if(cluster.isMaster) {
-    let cpuLen = numCPUS;
-    if(cpuLen > 1) {
-        cpuLen = numCPUS-1;
-    }
+// ejs
+app.engine("html", require("ejs").renderFile);
+app.set("view engine", "ejs");
 
-    for(let i=0 ; i < cpuLen ; i++) {
-        cluster.fork();
-    }
-    cluster.on("exit", function (worker, code, signal) {
-        console.log("worker "+worker.process.pid+" died");
-    })
-} else {
-    console.log( 'current worker pid is ' + process.pid );
-    // ejs
-    app.engine("html", require("ejs").renderFile);
-    app.set("view engine", "ejs");
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
 
-    app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({extended: false}));
+app.use("/sync/data", syncDataHandle);
+app.use("/view", syncView);
+app.use("/before", syncBefore);
+// app.use("/view20171026", syncView20171026);
+// app.use("/viewBefore", syncViewBefore);
+// app.use("/viewOld", syncViewOld);
+// app.use("/accesslog", accesslogView);
+app.use("/download", fileDw);
+app.use("/hls", hlsView);
+app.use("/public", express.static(__dirname + "/public"));
+app.use("/", mp);
+app.use("/chk_fail", failChk);
 
-    app.use("/sync/data", syncDataHandle);
-    app.use("/view", syncView);
-    app.use("/before", syncBefore);
-    // app.use("/view20171026", syncView20171026);
-    // app.use("/viewBefore", syncViewBefore);
-    // app.use("/viewOld", syncViewOld);
-    // app.use("/accesslog", accesslogView);
-    app.use("/download", fileDw);
-    app.use("/hls", hlsView);
-    app.use("/public", express.static(__dirname + "/public"));
-    app.use("/", mp);
-    app.use("/chk_fail", failChk);
+// dims purge
+// const fileUpload = require("./routes/file-upload-web.js");
+// app.set("view engine", "jade");
+// app.use("/web/file", fileUplaod);
+// app.use("/web/imgq_ip_list", express.static(config.dims_ip_file));
 
-    // dims purge
-    // const fileUpload = require("./routes/file-upload-web.js");
-    // app.set("view engine", "jade");
-    // app.use("/web/file", fileUplaod);
-    // app.use("/web/imgq_ip_list", express.static(config.dims_ip_file));
-
-    // start server
-    app.listen(port);
-    console.info("##################################");
-    console.log("# node js server start port:" + port + "#");
-    console.info("##################################");
-
-}
+// start server
+app.listen(port);
+console.info("##################################");
+console.log("# node js server start port:" + port + "#");
+console.info("##################################");
